@@ -1,3 +1,5 @@
+import { db } from "../database/db.js";
+
 export async function getUser(req, res) {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
@@ -26,7 +28,7 @@ export async function getUser(req, res) {
       return;
     }
 
-    const userUrls = await db.query(`SELECT * FROM urls WHERE userId = $1;`, [
+    const userUrls = await db.query(`SELECT * FROM urls WHERE "userId" = $1;`, [
       userId,
     ]);
 
@@ -58,23 +60,22 @@ export async function getUser(req, res) {
 export async function getRanking(_req, res) {
   try {
     const rankingQuery = `
-    SELECT users.id, users.name, 
-    COUNT (urls.id) AS "linksCount",
-    SUM(urls."visitCount") AS "visitCount"
+    SELECT users.id,
+    COUNT (urls.id) AS "linksCount",   SUM(urls."visitCount") AS "visitCount"
     FROM users LEFT JOIN urls ON urls."userId" = users.id
     GROUP BY users.id
-    ORDER BY "visitCount" DESC
+    ORDER BY "visitCount" DESC NULLS LAST
     LIMIT 10
     `;
 
     const ranking = await db.query(rankingQuery);
 
-    const rankingSort = ranking.rows.map((user) => {
+    const rankingSort = ranking.rows.map((e) => {
       return {
-        id: user.id,
-        name: user.name,
-        linksCount: user.linksCount,
-        visitCount: user.visitCount,
+        id: e.id,
+        name: e.name,
+        linksCount: e.linksCount,
+        visitCount: e.visitCount || 0,
       };
     });
 

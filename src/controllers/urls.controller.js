@@ -24,11 +24,15 @@ export async function shortenUrl(req, res) {
     const shortUrl = nanoid(10);
 
     const insertShortUrl = await db.query(
-      `INSERT INTO urls ("userId", "shortUrl", url) VALUES ($1, $2, $3)`,
+      `INSERT INTO urls ("userId", "shortUrl", url) VALUES ($1, $2, $3) RETURNING *;`,
       [session.rows[0].userId, shortUrl, url]
     );
 
-    res.status(201).send({ id: insertShortUrl.rows[0].id, shortUrl: shortUrl });
+    res.status(201).send(
+      {
+        id: insertShortUrl.rows[0].id,
+        shortUrl
+      });
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -58,7 +62,7 @@ export async function getUrlById(req, res) {
 export async function openShortUrlById(req, res) {
   const { shortUrl } = req.params;
   try {
-    const url = await db.query(`SELECT * FROM urls WHERE shortUrl = $1;`, [
+    const url = await db.query(`SELECT * FROM urls WHERE "shortUrl" = $1;`, [
       shortUrl,
     ]);
 
