@@ -28,11 +28,10 @@ export async function shortenUrl(req, res) {
       [session.rows[0].userId, shortUrl, url]
     );
 
-    res.status(201).send(
-      {
-        id: insertShortUrl.rows[0].id,
-        shortUrl
-      });
+    res.status(201).send({
+      id: insertShortUrl.rows[0].id,
+      shortUrl,
+    });
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -77,8 +76,10 @@ export async function openShortUrlById(req, res) {
     );
 
     res.redirect(url.rows[0].url);
+    return;
   } catch (error) {
     res.status(500).send(error.message);
+    return;
   }
 }
 
@@ -122,7 +123,9 @@ export async function deleteUrlById(req, res) {
     ]);
 
     res.sendStatus(204);
+    return;
   } catch (error) {
     res.sendStatus(500).send(error.message);
+    return;
   }
 }

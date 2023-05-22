@@ -24,8 +24,10 @@ export async function signUp(req, res) {
     }
 
     res.sendStatus(201);
+    return;
   } catch (error) {
-    res.status(500).send(error.message);
+    res.sendStatus(500);
+    return;
   }
 }
 
@@ -56,8 +58,10 @@ export async function signIn(req, res) {
     ]);
 
     res.status(200).send({ token });
+    return;
   } catch (error) {
-    res.sendStatus(500).send(error.message);
+    res.sendStatus(500);
+    return;
   }
 }
 
@@ -83,7 +87,9 @@ export async function logout(req, res) {
     await db.query(`DELETE FROM sessions WHERE token=$1;`, [token]);
 
     res.sendStatus(200);
+    return;
   } catch (error) {
     res.status(500).send(error.message);
+    return;
   }
 }

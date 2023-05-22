@@ -80,7 +80,9 @@ export async function getRanking(_req, res) {
     });
 
     res.status(200).send(rankingSort);
+    return;
   } catch (error) {
     res.status(500).send(error.message);
+    return;
   }
 }
