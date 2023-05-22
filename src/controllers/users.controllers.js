@@ -60,10 +60,10 @@ export async function getUser(req, res) {
 export async function getRanking(_req, res) {
   try {
     const rankingQuery = `
-    SELECT users.id,
+    SELECT users.id, users.name,
     COUNT (urls.id) AS "linksCount",   SUM(urls."visitCount") AS "visitCount"
     FROM users LEFT JOIN urls ON urls."userId" = users.id
-    GROUP BY users.id
+    GROUP BY users.id, users.name
     ORDER BY "visitCount" DESC NULLS LAST
     LIMIT 10
     `;
