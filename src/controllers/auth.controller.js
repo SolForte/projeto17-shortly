@@ -11,6 +11,7 @@ export async function signUp(req, res) {
 
     if (user.rowCount > 0) {
       res.sendStatus(409);
+      return;
     }
 
     if (password === confirmPassword) {
@@ -37,12 +38,14 @@ export async function signIn(req, res) {
 
     if (user.rowCount === 0) {
       res.sendStatus(401);
+      return;
     }
 
     const isValid = bcrypt.compareSync(password, user.rows[0].password);
 
     if (!isValid) {
       res.sendStatus(401);
+      return;
     }
 
     const token = uuid();
@@ -64,15 +67,17 @@ export async function logout(req, res) {
 
   if (!token) {
     res.sendStatus(401);
+    return;
   }
 
   try {
-    const active = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [
+    const user = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [
       token,
     ]);
 
-    if (active.rows.length === 0) {
+    if (user.rows.length === 0) {
       res.sendStatus(401);
+      return;
     }
 
     await db.query(`DELETE FROM sessions WHERE token=$1;`, [token]);
