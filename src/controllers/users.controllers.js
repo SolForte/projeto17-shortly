@@ -30,10 +30,10 @@ export async function getUser(req, res) {
       userId,
     ]);
 
-    let visitedCount = 0;
+    let userVisitCount = 0;
 
     const shortenedUrls = userUrls.rows.map((url) => {
-      visitedCount = visitedCount + url.visitCount;
+      userVisitCount = userVisitCount + url.visitCount;
       return {
         id: url.id,
         shortUrl: url.shortUrl,
@@ -45,11 +45,40 @@ export async function getUser(req, res) {
     const body = {
       id: user.rows[0].id,
       name: user.rows[0].name,
-      visitCount: visitedCount,
+      visitCount: userVisitCount,
       shortenedUrls,
     };
 
     res.status(200).send(body);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+}
+
+export async function getRanking(_req, res) {
+  try {
+    const rankingQuery = `
+    SELECT users.id, users.name, 
+    COUNT (urls.id) AS "linksCount",
+    SUM(urls."visitCount") AS "visitCount"
+    FROM users LEFT JOIN urls ON urls."userId" = users.id
+    GROUP BY users.id
+    ORDER BY "visitCount" DESC
+    LIMIT 10
+    `;
+
+    const ranking = await db.query(rankingQuery);
+
+    const rankingSort = ranking.rows.map((user) => {
+      return {
+        id: user.id,
+        name: user.name,
+        linksCount: user.linksCount,
+        visitCount: user.visitCount,
+      };
+    });
+
+    res.status(200).send(rankingSort);
   } catch (error) {
     res.status(500).send(error.message);
   }
