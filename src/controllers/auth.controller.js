@@ -71,11 +71,11 @@ export async function logout(req, res) {
   }
 
   try {
-    const user = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [
+    const session = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [
       token,
     ]);
 
-    if (user.rows.length === 0) {
+    if (session.rows.length === 0) {
       res.sendStatus(401);
       return;
     }

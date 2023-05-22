@@ -12,11 +12,11 @@ export async function shortenUrl(req, res) {
   }
 
   try {
-    const user = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [
+    const session = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [
       token,
     ]);
 
-    if (user.rows.length === 0) {
+    if (session.rows.length === 0) {
       res.sendStatus(401);
       return;
     }
@@ -25,7 +25,7 @@ export async function shortenUrl(req, res) {
 
     const insertShortUrl = await db.query(
       `INSERT INTO urls ("userId", "shortUrl", url) VALUES ($1, $2, $3)`,
-      [user.rows[0].userId, shortUrl, url]
+      [session.rows[0].userId, shortUrl, url]
     );
 
     res.status(201).send({ id: insertShortUrl.rows[0].id, shortUrl: shortUrl });
@@ -89,16 +89,16 @@ export async function deleteUrlById(req, res) {
   }
 
   try {
-    const user = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [
+    const session = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [
       token,
     ]);
 
-    if (user.rows.length === 0) {
+    if (session.rows.length === 0) {
       res.sendStatus(401);
       return;
     }
 
-    const { userId } = user.rows[0];
+    const { userId } = session.rows[0];
 
     const url = await db.query(`SELECT * FROM urls WHERE id = $1`, [id]);
 
