@@ -55,7 +55,7 @@ export async function getUrlById(req, res) {
   }
 }
 
-export async function openUrlById(req, res) {
+export async function openShortUrlById(req, res) {
   const { shortUrl } = req.params;
   try {
     const url = await db.query(`SELECT * FROM urls WHERE shortUrl = $1;`, [
@@ -75,5 +75,50 @@ export async function openUrlById(req, res) {
     res.redirect(url.rows[0].url);
   } catch (error) {
     res.status(500).send(error.message);
+  }
+}
+
+export async function deleteUrlById(req, res) {
+  const { id } = req.params;
+  const { authorization } = req.headers;
+  const token = authorization?.replace("Bearer ", "");
+
+  if (!token) {
+    res.sendStatus(401);
+    return;
+  }
+
+  try {
+    const user = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [
+      token,
+    ]);
+
+    if (user.rows.length === 0) {
+      res.sendStatus(401);
+      return;
+    }
+
+    const { userId } = user.rows[0];
+
+    const url = await db.query(`SELECT * FROM urls WHERE id = $1`, [id]);
+
+    if (url.rowCount === 0) {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (url.rows[0].userId !== userId) {
+      res.sendStatus(401);
+      return;
+    }
+
+    await db.query(`DELETE FROM urls WHERE id = $1 AND "userId" = $2`, [
+      id,
+      userId,
+    ]);
+
+    res.sendStatus(204);
+  } catch (error) {
+    res.sendStatus(500).send(error.message);
   }
 }
